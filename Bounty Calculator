@@ -1,0 +1,81 @@
+#include <iostream>
+#include <tuple>
+#include <limits> 
+using namespace std;
+
+double calculateBounty(double cvssScore, pair<int, int> lowRange, pair<int, int> mediumRange, 
+                       pair<int, int> highRange, pair<int, int> criticalRange) {
+  
+    pair<double, double> lowSeverity = {0.1, 3.9};
+    pair<double, double> mediumSeverity = {4.0, 6.9};
+    pair<double, double> highSeverity = {7.0, 8.9};
+    pair<double, double> criticalSeverity = {9.0, 10.0};
+
+    if (cvssScore >= lowSeverity.first && cvssScore <= lowSeverity.second) {
+        return lowRange.first + (cvssScore - lowSeverity.first) / 
+               (lowSeverity.second - lowSeverity.first) * (lowRange.second - lowRange.first);
+    }
+    else if (cvssScore >= mediumSeverity.first && cvssScore <= mediumSeverity.second) {
+        return mediumRange.first + (cvssScore - mediumSeverity.first) / 
+               (mediumSeverity.second - mediumSeverity.first) * (mediumRange.second - mediumRange.first);
+    }
+    else if (cvssScore >= highSeverity.first && cvssScore <= highSeverity.second) {
+        return highRange.first + (cvssScore - highSeverity.first) / 
+               (highSeverity.second - highSeverity.first) * (highRange.second - highRange.first);
+    }
+    else if (cvssScore >= criticalSeverity.first && cvssScore <= criticalSeverity.second) {
+        return criticalRange.first + (cvssScore - criticalSeverity.first) / 
+               (criticalSeverity.second - criticalSeverity.first) * (criticalRange.second - criticalRange.first);
+    }
+    
+    return -1;  
+}
+
+// Helper function to get a valid range input from the user
+pair<int, int> getRange(const string& severity) {
+    pair<int, int> range;
+    while (true) {
+        cout << "Enter " << severity << " severity range (min max): ";
+        cin >> range.first >> range.second;
+        if (cin.fail() || range.first < 0 || range.second < range.first) {
+            cin.clear(); // Clear the error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+            cout << "Invalid input. Please enter valid min and max values (e.g., 150 400).\n";
+        } else {
+            break;
+        }
+    }
+    return range;
+}
+
+// Main function
+int main() {
+    double cvssScore;
+    
+    while (true) {
+        cout << "Enter the CVSS score (0.1 to 10.0): ";
+        cin >> cvssScore;
+        if (cin.fail() || cvssScore < 0.1 || cvssScore > 10.0) {
+            cin.clear(); // Clear the error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+            cout << "Invalid CVSS score. Please enter a score between 0.1 and 10.0.\n";
+        } else {
+            break;
+        }
+    }
+    
+    pair<int, int> lowRange = getRange("Low");
+    pair<int, int> mediumRange = getRange("Medium");
+    pair<int, int> highRange = getRange("High");
+    pair<int, int> criticalRange = getRange("Critical");
+
+    // Calculate and display the bounty
+    double bounty = calculateBounty(cvssScore, lowRange, mediumRange, highRange, criticalRange);
+
+    if (bounty >= 0)
+        cout << "The bounty for a CVSS score of " << cvssScore << " is: $" << bounty << endl;
+    else
+        cout << "CVSS score is out of range." << endl;
+
+    return 0;
+}
